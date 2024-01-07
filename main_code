@@ -1,0 +1,284 @@
+import java.util.*;
+
+class Activity
+{
+    private String name;
+    private String description;
+    private double cost;
+    private int capacity;
+
+    public Activity(String name, String description, double cost, int capacity)
+    {
+        this.name = name;
+        this.description = description;
+        this.cost = cost;
+        this.capacity = capacity;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public String getDescription() 
+    {
+        return description;
+    }
+
+    public double getCost()
+    {
+        return cost;
+    }
+
+    public int getCapacity()
+    {
+        return capacity;
+    }
+    public int reduceCapacity()
+    {
+        return capacity-1;
+    }
+}
+
+class Destination
+{
+    private String name;
+    private List<Activity> activities;
+
+    public Destination(String name) {
+        this.name = name;
+        this.activities = new ArrayList<>();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<Activity> getActivities() {
+        return activities;
+    }
+
+    public void addActivity(Activity activity) {
+        activities.add(activity);
+    }
+}
+
+class Passenger
+{
+    private String name;
+    private int passengerNumber;
+    private double balance;
+    private List<Activity> activities;
+
+    public Passenger(String name, int passengerNumber, double balance) {
+        this.name = name;
+        this.passengerNumber = passengerNumber;
+        this.balance = balance;
+        this.activities = new ArrayList<>();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getPassengerNumber() {
+        return passengerNumber;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public List<Activity> getActivities() {
+        return activities;
+    }
+
+    public void signUpForActivity(Activity activity) {
+        if (activity.getCapacity() > 0) {
+            activities.add(activity);
+            activity.reduceCapacity();
+            if (this instanceof GoldPassenger) {
+                GoldPassenger goldPassenger = (GoldPassenger) this;
+                balance -= (activity.getCost() * 0.9); // 10% discount for gold passenger
+            } else if (this instanceof StandardPassenger) {
+                StandardPassenger standardPassenger = (StandardPassenger) this;
+                balance -= activity.getCost();
+            }
+        }
+    }
+}
+
+class StandardPassenger extends Passenger {
+    public StandardPassenger(String name, int passengerNumber, double balance) {
+        super(name, passengerNumber, balance);
+    }
+}
+
+class GoldPassenger extends Passenger {
+    public GoldPassenger(String name, int passengerNumber, double balance) {
+        super(name, passengerNumber, balance);
+    }
+}
+
+class PremiumPassenger extends Passenger {
+    public PremiumPassenger(String name, int passengerNumber) {
+        super(name, passengerNumber, 0); // Premium passengers have free balance
+    }
+}
+
+class TravelPackage
+{
+    private String name;
+    private int passengerCapacity;
+    private List<Passenger> passengers;
+    private List<Destination> destinations;
+
+    public TravelPackage(String name, int passengerCapacity) {
+        this.name = name;
+        this.passengerCapacity = passengerCapacity;
+        this.passengers = new ArrayList<>();
+        this.destinations = new ArrayList<>();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getPassengerCapacity() {
+        return passengerCapacity;
+    }
+
+    public List<Passenger> getPassengers() {
+        return passengers;
+    }
+
+    public List<Destination> getDestinations() {
+        return destinations;
+    }
+
+    public void addDestination(Destination destination) {
+        destinations.add(destination);
+    }
+
+    public void addPassenger(Passenger passenger) {
+        if (passengers.size() < passengerCapacity) {
+            passengers.add(passenger);
+        } else {
+            System.out.println("Cannot add more passengers. The package is full.");
+        }
+    }
+
+    public void printItinerary() {
+        System.out.println("Travel Package: " + name);
+        for (Destination destination : destinations) {
+            System.out.println("Destination: " + destination.getName());
+            for (Activity activity : destination.getActivities()) {
+                System.out.println("Activity: " + activity.getName() + ", Cost: " + activity.getCost() + ", Capacity: " + activity.getCapacity() + ", Description: " + activity.getDescription());
+            }
+            System.out.println();
+        }
+    }
+
+    public void printPassengerList() {
+        System.out.println("Passenger List for Travel Package: " + name);
+        System.out.println("Passenger Capacity: " + passengerCapacity);
+        System.out.println("Number of Passengers Enrolled: " + passengers.size());
+        for (Passenger passenger : passengers) {
+            System.out.println("Name: " + passenger.getName() + ", Number: " + passenger.getPassengerNumber());
+        }
+    }
+
+    public void printPassengerDetails(Passenger passenger) {
+        System.out.println("Passenger Details: ");
+        System.out.println("Name: " + passenger.getName());
+        System.out.println("Number: " + passenger.getPassengerNumber());
+        if (passenger instanceof StandardPassenger || passenger instanceof GoldPassenger) {
+            System.out.println("Balance: " + passenger.getBalance());
+        }
+        System.out.println("Activities Signed Up For: ");
+        for (Activity activity : passenger.getActivities()) {
+            System.out.println("Activity: " + activity.getName() + ", Destination: "
+                    + findDestinationByActivity(activity).getName() + ", Price: " + calculatePrice(passenger, activity));
+        }
+    }
+
+    private Destination findDestinationByActivity(Activity activity) {
+        for (Destination destination : destinations) {
+            if (destination.getActivities().contains(activity)) {
+                return destination;
+            }
+        }
+        return null;
+    }
+
+    private double calculatePrice(Passenger passenger, Activity activity) {
+        if (passenger instanceof StandardPassenger) {
+            return activity.getCost();
+        } else if (passenger instanceof GoldPassenger) {
+            return activity.getCost() * 0.9; // 10% discount for gold passenger
+        } else {
+            return 0; // Premium passenger is free
+        }
+    }
+
+    public void printAvailableActivities() {
+        System.out.println("Available Activities: ");
+        for (Destination destination : destinations) {
+            for (Activity activity : destination.getActivities()) {
+                if (activity.getCapacity() > 0) {
+                    System.out.println("Activity: " + activity.getName() + ", Destination: "
+                            + destination.getName() + ", Capacity: " + activity.getCapacity());
+                }
+            }
+        }
+    }
+}
+
+public class TravelAgencySystem {
+    public static void main(String[] args) {
+        // Creating activities
+        Activity hiking = new Activity("Hiking", "Mountain hike", 50.0, 20);
+        Activity snorkeling = new Activity("Snorkeling", "Underwater adventure", 80.0, 15);
+
+        // Creating destinations
+        Destination mountains = new Destination("Mountains");
+        mountains.addActivity(hiking);
+
+        Destination beach = new Destination("Beach");
+        beach.addActivity(snorkeling);
+
+        // Creating travel package
+        TravelPackage package1 = new TravelPackage("Adventure Package", 30);
+        package1.addDestination(mountains);
+        package1.addDestination(beach);
+
+        // Creating passengers
+        StandardPassenger standardPassenger = new StandardPassenger("John", 1, 100.0);
+        GoldPassenger goldPassenger = new GoldPassenger("Alice", 2, 150.0);
+        PremiumPassenger premiumPassenger = new PremiumPassenger("Bob", 3);
+
+        // Adding passengers to the travel package
+        package1.addPassenger(standardPassenger);
+        package1.addPassenger(goldPassenger);
+        package1.addPassenger(premiumPassenger);
+
+        // Signing up passengers for activities
+        standardPassenger.signUpForActivity(hiking);
+        goldPassenger.signUpForActivity(snorkeling);
+        premiumPassenger.signUpForActivity(hiking);
+
+        // Printing itinerary
+        package1.printItinerary();
+
+        // Printing passenger list
+        package1.printPassengerList();
+
+        // Printing details of individual passengers
+        package1.printPassengerDetails(standardPassenger);
+        package1.printPassengerDetails(goldPassenger);
+        package1.printPassengerDetails(premiumPassenger);
+
+        // Printing available activities
+        package1.printAvailableActivities();
+    }
+}
